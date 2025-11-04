@@ -4,100 +4,135 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Http;
-use App\Models\Exercise;
 use App\Models\Muscle;
 use App\Models\Equipment;
-use App\Models\ExerciseImage;
+use App\Models\Exercise;
+use App\Models\ExerciseCategory;
 
 class WgerFullSeeder extends Seeder
 {
     public function run()
     {
-        $this->command->info('🚀 Import complet de la base Wger vers MySQL...');
+        // 🔧 Augmente la mémoire max pour éviter les erreurs "Allowed memory size exhausted"
+        ini_set('memory_limit', '512M');
 
-        // 1️⃣ Muscles
-        $muscles = Http::withoutVerifying()->get('https://wger.de/api/v2/muscle/')->json()['results'] ?? [];
-        foreach ($muscles as $m) {
-            Muscle::updateOrCreate(['id' => $m['id']], ['name' => $m['name']]);
-        }
-        $this->command->info('✅ Muscles importés : ' . count($muscles));
+        $this->command->info('⚡ Importation complète et optimisée des données WGER...');
 
-        // 2️⃣ Équipements
-        $equipments = Http::withoutVerifying()->get('https://wger.de/api/v2/equipment/')->json()['results'] ?? [];
-        foreach ($equipments as $e) {
-            Equipment::updateOrCreate(['id' => $e['id']], ['name' => $e['name']]);
-        }
-        $this->command->info('✅ Équipements importés : ' . count($equipments));
+        // 1️⃣ Import Muscles
+        $this->importEndpoint(Muscle::class, 'muscle', function ($item) {
+            return [
+                'id' => $item['id'],
+                'name' => $item['name_en'] ?? $item['name'] ?? 'Unnamed muscle',
+            ];
+        });
 
-        // 3️⃣ Exercices (import paginé)
-        $page = 0;
-        $total = 0;
+        // 2️⃣ Import Equipment
+        $this->importEndpoint(Equipment::class, 'equipment', function ($item) {
+            return [
+                'id' => $item['id'],
+                'name' => $item['name'] ?? 'Unnamed equipment',
+            ];
+        });
+
+        // 3️⃣ Import Categories
+        $this->importEndpoint(ExerciseCategory::class, 'exercisecategory', function ($item) {
+            return [
+                'id' => $item['id'],
+                'name' => $item['name'] ?? 'Unnamed category',
+            ];
+        });
+
+        // 4️⃣ Import Exercises (anglais uniquement, sans images)
+        $this->command->info('➡️ Import des exercices (en anglais, sans images)...');
+
+        $page = 1;
+        $totalCount = 0;
+
         do {
-            $url = "https://wger.de/api/v2/exercise/?language=8&limit=100&offset=" . ($page * 100);
+            $response = Http::withoutVerifying()
+                ->get("https://wger.de/api/v2/exerciseinfo/?language=2&limit=100&page=$page")
+                ->json();
 
-            $response = Http::withoutVerifying()->get($url);
-
-            // Vérifie que la requête a réussi
-            if ($response->failed()) {
-                $this->command->warn("⚠️ Erreur HTTP page $page");
-                break;
-            }
-
-            $json = $response->json();
-            $results = $json['results'] ?? [];
-
-            if (empty($results)) {
-                $this->command->warn("⚠️ Aucune donnée reçue pour la page $page");
-                break;
-            }
-
-            foreach ($results as $ex) {
-                if (!isset($ex['id']) || empty($ex['name'])) {
-                    continue; // On ignore les exercices incomplets
-                }
-
-                Exercise::updateOrCreate(
-                    ['id' => $ex['id']],
-                    [
-                        'name' => $ex['name'],
-                        'description' => strip_tags($ex['description'] ?? ''),
-                        'muscle_id' => $ex['muscles'][0] ?? null,
-                        'equipment_id' => $ex['equipment'][0] ?? null,
-                    ]
-                );
-                $total++;
-            }
-
-            $page++;
-        } while (!empty($json['next']));
-
-        $this->command->info("✅ Exercices importés : $total");
-
-
-        // 4️⃣ Images
-        $page = 0;
-        $totalImg = 0;
-        do {
-            $url = "https://wger.de/api/v2/exerciseimage/?limit=100&offset=" . ($page * 100);
-            $response = Http::withoutVerifying()->get($url)->json();
             $results = $response['results'] ?? [];
 
-            foreach ($results as $img) {
-                ExerciseImage::updateOrCreate(
-                    ['id' => $img['id']],
+            foreach ($results as $exercise) {
+                $totalCount++;
+
+                Exercise::updateOrCreate(
+                    ['id' => $exercise['id']],
                     [
-                        'exercise_id' => $img['exercise'],
-                        'image' => $img['image'],
-                        'is_main' => $img['is_main']
+                        'name' => $exercise['name'] ?? $exercise['name_original'] ?? 'Unnamed exercise',
+                        'description' => $exercise['description'] ?? '',
+                        'muscle_id' => $exercise['muscles'][0]['id'] ?? null,
+                        'equipment_id' => $exercise['equipment'][0]['id'] ?? null,
                     ]
                 );
-                $totalImg++;
             }
+
+            $this->command->info("   → Page $page : " . count($results) . " exercices importés");
+
+            // 🧹 Nettoyage mémoire
+            unset($results, $response);
+            gc_collect_cycles();
 
             $page++;
         } while (!empty($response['next']));
 
-        $this->command->info("🖼️ Images importées : $totalImg");
-        $this->command->info('🎉 Import complet terminé !');
+        $this->command->info("✅ $totalCount exercices importés (anglais).");
+
+        // 5️⃣ Import des traductions anglaises (nom + description)
+        $this->command->info('➡️ Import des traductions (anglais)...');
+
+        $page = 1;
+        $translated = 0;
+
+        do {
+            $response = Http::withoutVerifying()
+                ->get("https://wger.de/api/v2/exercise-translation/?language=2&limit=100&page=$page")
+                ->json();
+
+            $results = $response['results'] ?? [];
+
+            foreach ($results as $translation) {
+                $exerciseId = $translation['exercise'] ?? null;
+                if (!$exerciseId) continue;
+
+                Exercise::where('id', $exerciseId)->update([
+                    'name' => $translation['name'] ?? 'Unnamed exercise',
+                    'description' => $translation['description'] ?? '',
+                ]);
+
+                $translated++;
+            }
+
+            $this->command->info("   → Page $page : " . count($results) . " traductions appliquées");
+
+            unset($results, $response);
+            gc_collect_cycles();
+            $page++;
+        } while (!empty($response['next']));
+
+        $this->command->info("✅ $translated traductions anglaises appliquées.");
+
+        $this->command->info('🏁 Importation complète terminée avec succès !');
+    }
+
+    /**
+     * Import générique d'un endpoint simple (muscles, équipement, catégories)
+     */
+    private function importEndpoint($modelClass, $endpoint, $map)
+    {
+        $this->command->info("➡️ Import de $endpoint...");
+
+        $response = Http::withoutVerifying()
+            ->get("https://wger.de/api/v2/$endpoint/?limit=200")
+            ->json()['results'] ?? [];
+
+        foreach ($response as $item) {
+            $data = $map($item);
+            $modelClass::updateOrCreate(['id' => $data['id']], $data);
+        }
+
+        $this->command->info("   → " . count($response) . " $endpoint importés");
     }
 }

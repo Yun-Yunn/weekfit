@@ -8,16 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('exercise_images', function (Blueprint $table) {
+        Schema::create('exercisecategories', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('exercise_id')->constrained('exercises')->onDelete('cascade');
-            $table->string('image_url');
+            $table->string('name')->nullable(); // 👈 colonne manquante
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('exercise_images');
+        Schema::dropIfExists('exercisecategories');
     }
 };
