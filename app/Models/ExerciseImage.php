@@ -10,7 +10,9 @@ class ExerciseImage extends Model
     use HasFactory;
 
     protected $fillable = [
-        'exercise_id', 'image_url'
+        'exercise_id',
+        'image',
+        'is_main',
     ];
 
     public function exercise()

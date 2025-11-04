@@ -10,8 +10,9 @@ return new class extends Migration
     {
         Schema::create('exercise_images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('exercise_id')->constrained('exercises')->onDelete('cascade');
-            $table->string('image_url');
+            $table->foreignId('exercise_id')->constrained()->onDelete('cascade');
+            $table->string('image')->nullable();
+            $table->boolean('is_main')->default(false);
             $table->timestamps();
         });
     }

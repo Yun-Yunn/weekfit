@@ -14,7 +14,10 @@
             <div class="col-md-4 mb-4">
                 <div class="card bg-secondary text-white h-100">
                     @if($exercise->images->first())
-                        <img src="{{ asset($exercise->images->first()->image_url) }}" class="card-img-top" alt="{{ $exercise->name }}">
+<img src="{{ $exercise->images->first()->image ?? 'https://via.placeholder.com/400x300?text=No+Image' }}" 
+     class="card-img-top" 
+     alt="{{ $exercise->name }}">
+
                     @else
                         <img src="https://via.placeholder.com/400x300?text=No+Image" class="card-img-top">
                     @endif
