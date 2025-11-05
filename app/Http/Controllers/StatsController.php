@@ -1,49 +1,54 @@
 <?php
 
 namespace App\Http\Controllers;
- 
+
+use Illuminate\Contracts\View\View; // Importation pour le type de retour
+use Illuminate\Http\Request;
+
+use App\Models\Equipment;
 use App\Models\Exercise;
+use App\Models\ExerciseImage;
+use App\Models\Muscle;
 use Carbon\Carbon;
-use Illuminate\Contracts\View\View;
 
 class StatsController extends Controller
 {
     public function index(): View 
     {
-        // Récupération de l'ID de l'utilisateur connecté
-        $userId = auth()->id(); 
-        
-        // 1. Définition de la période hebdomadaire (7 derniers jours complets)
-        $startOfPeriod = Carbon::now()->subDays(7)->startOfDay();
-        $endOfPeriod = Carbon::now()->endOfDay();              
+        // 1. Définition de la période hebdomadaire (7 derniers jours)
+        $startOfPeriod = Carbon::now()->subDays(7)->startOfDay(); 
+        $endOfPeriod = Carbon::now()->endOfDay();               
 
-        // 2. Récupération des exercices de l'utilisateur dans la semaine (filtrés par user_id et created_at)
-        $weeklyExercises = Exercise::where('user_id', $userId) 
-                                    ->whereBetween('created_at', [$startOfPeriod, $endOfPeriod])
+        // 2. Récupération des exercices de la semaine (les 7 derniers jours)
+        // La colonne 'created_at' est utilisée ici, ce qui est correct.
+        $weeklyExercises = Exercise::whereBetween('created_at', [$startOfPeriod, $endOfPeriod])
                                     ->get();
 
-        // 3. Calcul des statistiques hebdomadaires (uniquement celles que vous souhaitez conserver)
         $stats = [
-            // Statistiques Hebdomadaires de l'utilisateur (7 derniers jours)
+            // ... autres stats ...
+            
+            // Statistiques Hebdomadaires (7 derniers jours)
             'weekly_exercises' => $weeklyExercises->count(),
             'weekly_muscles' => $weeklyExercises->pluck('muscle_id')->unique()->count(), 
             'weekly_equipments' => $weeklyExercises->pluck('equipment_id')->unique()->count(), 
+            'weekly_images' => ExerciseImage::whereBetween('created_at', [$startOfPeriod, $endOfPeriod])->count(),
         ];
 
-        // 4. Préparation des données pour le graphique (Exercices par jour sur 7 jours)
+        // 3. Préparation des données pour le graphique
         $dailyExercises = $weeklyExercises->groupBy(function($date) {
-            return Carbon::parse($date->created_at)->format('Y-m-d');
+            // Utilise 'created_at' pour le regroupement, ce qui est correct.
+            return Carbon::parse($date->created_at)->format('Y-m-d'); 
         })->map(function ($item, $key) {
             return count($item); 
         });
 
-        // 5. Génération des étiquettes (jours) et des données (comptes)
+        // ... logique pour remplir les jours manquants ...
         $labels = [];
         $data = [];
-        for ($i = 6; $i >= 0; $i--) {
+        for ($i = 6; $i >= 0; $i--) { 
             $date = Carbon::now()->subDays($i);
             $formattedDate = $date->format('Y-m-d');
-            $labels[] = $date->format('D d/m');
+            $labels[] = $date->format('D d/m'); 
             $data[] = $dailyExercises->get($formattedDate, 0); 
         }
 

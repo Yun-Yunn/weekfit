@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -24,6 +25,9 @@ class AppServiceProvider extends ServiceProvider
     {
         // Préchargement des ressources Vite
         Vite::prefetch(concurrency: 3);
+        
+        // longueur par défaut des strings à 191
+        Schema::defaultStringLength(191);
 
         // Configuration de la langue en français
         App::setLocale('fr');
