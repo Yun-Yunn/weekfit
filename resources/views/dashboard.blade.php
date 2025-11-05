@@ -7,14 +7,19 @@
 
     <style>
         body {
-            background-color: #1e1e1e;
+            background-color: #398af5;
             color: #fff;
             overflow: hidden;
+        }
+        .navbar {
+            background-color: #1244b1;
+            border-bottom: 1px solid #444;
+            height: 60px;
         }
         .dashboard {
             display: flex;
             flex-direction: row;
-            height: 100vh;
+            height: calc(100vh - 60px);
             gap: 1rem;
             padding: 1rem;
         }
@@ -40,26 +45,47 @@
             border-radius: 10px;
             background: #1e1e1e;
         }
-        h2 {
-            text-align: center;
-            margin-bottom: 1rem;
+        .date {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 500;
+            color: #f5ebeb;
         }
     </style>
 </head>
 <body>
 
-<div class="dashboard">
+<nav class="navbar navbar-expand-lg navbar-dark px-3">
+    <div class="container-fluid">
+        <span class="navbar-brand">WeekFit</span>
 
-    {{-- 🧮 Panneau des statistiques (chargé via StatsController) --}}
+        <span class="date">
+            {{ \Illuminate\Support\Str::title(now()->translatedFormat('l d F Y')) }}
+        </span>
+
+        <div class="d-flex align-items-center ms-auto">
+            <span class="me-3 text-light">
+                👤 {{ Auth::user()->name ?? 'Utilisateur' }}
+            </span>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="btn btn-outline-light btn-sm">
+                    Déconnexion
+                </button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<div class="dashboard">
     <div class="left-panel">
         <iframe src="{{ route('stats.index') }}" title="Statistiques"></iframe>
     </div>
 
-    {{-- 🏋️‍♂️ Panneau des exercices (ton module actuel) --}}
     <div class="right-panel">
         <iframe src="{{ route('exercises.index') }}" title="Exercices"></iframe>
     </div>
-
 </div>
 
 </body>

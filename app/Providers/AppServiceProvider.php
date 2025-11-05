@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Schema;
-
+use Carbon\Carbon;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +22,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Schema::defaultStringLength(191);
+        // Préchargement des ressources Vite
+        Vite::prefetch(concurrency: 3);
+
+        // Configuration de la langue en français
+        App::setLocale('fr');
+        Carbon::setLocale('fr');
+        setlocale(LC_TIME, 'fr_FR.UTF-8');
     }
 }
