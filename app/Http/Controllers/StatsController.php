@@ -25,7 +25,6 @@ class StatsController extends Controller
                                     ->get();
 
         $stats = [
-            // ... autres stats ...
             
             // Statistiques Hebdomadaires (7 derniers jours)
             'weekly_exercises' => $weeklyExercises->count(),
