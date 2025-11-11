@@ -7,12 +7,12 @@
 
     <style>
         body {
-            background-color: #398af5;
+            background-color: #1e1e1e;
             color: #fff;
             overflow: hidden;
         }
         .navbar {
-            background-color: #1244b1;
+            background-color: #1a1a2e;
             border-bottom: 1px solid #444;
             height: 60px;
         }
