@@ -11,6 +11,7 @@
             background-color: #ece8e8;
             color: #fff;
             overflow: hidden;
+            height: 100vh;
         }
 
         .navbar {
@@ -31,17 +32,21 @@
         .right-panel {
             border-radius: 10px;
             padding: 1rem;
+            overflow: hidden;
         }
 
         .left-panel {
             flex: 1.2;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
         }
 
         .right-panel {
             flex: 2.5;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            position: relative;
             overflow: hidden;
         }
 
