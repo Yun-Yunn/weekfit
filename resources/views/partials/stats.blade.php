@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #1a1a2e;
+            background-color: #22223b;
             /* Couleur de fond sombre pour correspondre à votre image */
             color: #e0e0e0;
             margin: 0;
@@ -26,7 +26,7 @@
             background-color: #22223b;
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            
         }
 
         .header {
