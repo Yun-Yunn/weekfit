@@ -7,6 +7,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StatsController;
+use Illuminate\Support\Facades\Http;
+
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
@@ -29,5 +31,17 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
+Route::get('/test-translate', function () {
+    $response = Http::get('https://translate.googleapis.com/translate_a/single', [
+        'client' => 'gtx',
+        'sl' => 'auto',
+        'tl' => 'fr',
+        'dt' => 't',
+        'q' => 'Hello, how are you?',
+    ]);
 
-require __DIR__.'/auth.php';
+    return $response->json();
+});
+
+
+require __DIR__ . '/auth.php';

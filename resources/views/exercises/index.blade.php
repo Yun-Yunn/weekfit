@@ -2,38 +2,74 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Liste des exercices</title>
+    <title>Exercice du jour</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #f5f5f5;
+        }
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+        }
+        .card img {
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            max-height: 400px;
+            object-fit: cover;
+        }
+        .card-body {
+            background-color: #3b3b3b;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+        h1 {
+            font-weight: 700;
+        }
+    </style>
 </head>
-<body class="bg-dark text-light">
-<div class="container mt-4">
-    <h1 class="mb-4">🏋️‍♂️ Exercices WGER importés</h1>
+<body>
 
-    <div class="row">
-        @foreach($exercises as $exercise)
-            <div class="col-md-4 mb-4">
-                <div class="card bg-secondary text-white h-100">
-                    @if($exercise->images->first())
-<img src="{{ $exercise->images->first()->image ?? 'https://via.placeholder.com/400x300?text=No+Image' }}" 
-     class="card-img-top" 
-     alt="{{ $exercise->name }}">
+<div class="container mt-4 text-center">
+    <h1 class="mb-4">🏋️‍♂️ Exercice du jour</h1>
 
-                    @else
-                        <img src="https://via.placeholder.com/400x300?text=No+Image" class="card-img-top">
-                    @endif
+    @if(!$exercise)
+        <div class="alert alert-warning">
+            Aucun exercice trouvé.
+        </div>
+    @else
+        <div class="card text-white mx-auto" style="max-width: 600px;">
+            @if($exercise->images->first())
+                <img src="{{ $exercise->images->first()->image }}" 
+                     alt="{{ $exercise->translated_name }}" 
+                     class="card-img-top">
+            @endif
 
-                    <div class="card-body">
-                        <h5 class="card-title">{{ $exercise->name ?? 'Sans nom' }}</h5>
-                        <p class="card-text">{!! Str::limit(strip_tags($exercise->description), 100) !!}</p>
-                        <p>
-                            💪 <strong>Muscle :</strong> {{ $exercise->muscle->name ?? 'Inconnu' }}<br>
-                            🏋️ <strong>Équipement :</strong> {{ $exercise->equipment->name ?? 'Aucun' }}
-                        </p>
-                    </div>
-                </div>
+            <div class="card-body">
+                <h3 class="card-title mb-3 fw-bold">
+                    {{ $exercise->translated_name ?? $exercise->name }}
+                </h3>
+
+                <p class="card-text text-light" style="text-align: justify;">
+                    {{ $exercise->translated_description ?? $exercise->description }}
+                </p>
+
+                <hr class="border-light">
+
+                <p class="mb-1">
+                    💪 <strong>Muscle :</strong> 
+                    {{ $exercise->translated_muscle ?? ($exercise->muscle->name ?? 'Inconnu') }}
+                </p>
+                <p>
+                    🏋️ <strong>Équipement :</strong> 
+                    {{ $exercise->translated_equipment ?? ($exercise->equipment->name ?? 'Aucun') }}
+                </p>
             </div>
-        @endforeach
-    </div>
+        </div>
+    @endif
 </div>
+
 </body>
 </html>

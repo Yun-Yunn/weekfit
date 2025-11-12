@@ -2,85 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Exercise;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Cache;
+use App\Models\Exercise;
+use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class ExerciseController extends Controller
 {
     public function index()
     {
+        // 🧠 Récupère un exercice aléatoire AVEC une image .gif
+        $exercise = Exercise::with(['images', 'muscle', 'equipment'])
+            ->whereHas('images', function ($query) {
+                $query->where('image', 'LIKE', '%.gif');
+            })
+            ->inRandomOrder()
+            ->first();
 
-        $exercises = Exercise::with(['muscle', 'equipment', 'images'])
-            ->whereNotNull('name')
-            ->where('name', '<>', 'Unnamed exercise')
-            ->whereNotNull('description')
-            ->where('description', '<>', '')
-            ->whereHas('images')
-            ->orderBy('id', 'asc')
-            ->get();
-
-
-        foreach ($exercises as $exercise) {
-            $cacheKey = 'exercise_translation_' . $exercise->id;
-
-            [$translatedName, $translatedDesc] = Cache::remember($cacheKey, now()->addDays(7), function () use ($exercise) {
-                try {
-                    $apiUrl = 'https://libretranslate.de/translate';
-
-
-                    $translatedName = Http::timeout(15)->post($apiUrl, [
-                        'q' => $exercise->name,
-                        'source' => 'auto',
-                        'target' => 'fr',
-                        'format' => 'text'
-                    ])->json()['translatedText'] ?? $exercise->name;
-
-                    $translatedDesc = Http::timeout(15)->post($apiUrl, [
-                        'q' => strip_tags($exercise->description),
-                        'source' => 'auto',
-                        'target' => 'fr',
-                        'format' => 'text'
-                    ])->json()['translatedText'] ?? $exercise->description;
-
-
-                    if (!self::isFrench($translatedDesc)) {
-                        $translatedDesc = Http::timeout(15)->post($apiUrl, [
-                            'q' => $translatedDesc,
-                            'source' => 'auto',
-                            'target' => 'fr',
-                            'format' => 'text'
-                        ])->json()['translatedText'] ?? $translatedDesc;
-                    }
-
-                    return [$translatedName, $translatedDesc];
-                } catch (\Throwable $e) {
-                    info('Erreur traduction : ' . $e->getMessage());
-                    return [$exercise->name, $exercise->description];
-                }
-            });
-
-
-            $exercise->name = $translatedName;
-            $exercise->description = $translatedDesc;
+        if (!$exercise) {
+            return view('exercises.index', ['exercise' => null]);
         }
 
-        return view('exercises.index', compact('exercises'));
-    }
+        // 🌍 Initialisation du traducteur local
+        $tr = new GoogleTranslate('fr'); // traduction vers le français
+        $tr->setSource('auto'); // détection automatique de la langue
 
-
-    private static function isFrench($text)
-    {
-        $frenchWords = ['le', 'la', 'les', 'des', 'est', 'avec', 'pour', 'une', 'dans', 'vous'];
-        $count = 0;
-
-        foreach ($frenchWords as $word) {
-            if (stripos($text, $word) !== false) {
-                $count++;
+        // ⚡ Fonction de traduction locale
+        $translate = function ($text) use ($tr) {
+            if (!$text || trim($text) === '') return '—';
+            try {
+                return $tr->translate(strip_tags($text));
+            } catch (\Throwable $e) {
+                info('Erreur traduction : ' . $e->getMessage());
+                return $text; // fallback si erreur
             }
-        }
+        };
 
-        return $count >= 3;
+        // 🪄 Traduction des champs
+        $exercise->translated_name = $translate($exercise->name);
+        $exercise->translated_description = $translate($exercise->description);
+        $exercise->translated_muscle = $translate(optional($exercise->muscle)->name ?? 'Inconnu');
+        $exercise->translated_equipment = $translate(optional($exercise->equipment)->name ?? 'Aucun');
+
+        // ✅ Envoi à la vue
+        return view('exercises.index', compact('exercise'));
     }
 }
