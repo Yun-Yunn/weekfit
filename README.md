@@ -26,9 +26,46 @@ L’utilisateur peut se connecter, accéder à un **dashboard** dynamique et con
 
 ---
 
-## Installation
+Installe les dépendances PHP et JavaScript :
 
-1. Clone le projet :
-   ```bash
-   git clone https://github.com/<TON-UTILISATEUR>/<TON-REPO>.git
-   cd weekfit
+composer install
+npm install
+npm run dev
+
+
+Copie le fichier d’environnement et configure-le :
+
+cp .env.example .env
+
+
+Génère la clé d’application :
+
+php artisan key:generate
+
+
+Configure ta base de données dans le fichier .env, par exemple :
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=weekfit
+DB_USERNAME=root
+DB_PASSWORD=
+
+
+Exécute les migrations :
+
+php artisan migrate
+
+
+Lance le serveur local :
+
+php artisan serve
+
+
+Ouvre ton navigateur et accède à :
+
+http://127.0.0.1:8000
+
+
+
