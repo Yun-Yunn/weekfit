@@ -8,14 +8,14 @@
 
     <style>
         body {
-            background-color: #398af5;
+            background-color: #ece8e8;
             color: #fff;
             overflow: hidden;
             height: 100vh;
         }
 
         .navbar {
-            background-color: #1244b1;
+            background-color: #22223b;
             border-bottom: 1px solid #444;
             height: 60px;
         }
@@ -30,7 +30,6 @@
 
         .left-panel,
         .right-panel {
-            background-color: #2b2b2b;
             border-radius: 10px;
             padding: 1rem;
             overflow: hidden;
@@ -51,18 +50,12 @@
             overflow: hidden;
         }
 
-iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    border-radius: 10px;
-    background: transparent;
-    overflow: hidden;
-}
-
-
-        iframe.fading {
-            opacity: 0.6;
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 10px;
+            background: #1e1e1e;
         }
 
         .date {
@@ -105,30 +98,9 @@ iframe {
         </div>
 
         <div class="right-panel">
-            <iframe id="exerciseFrame" src="{{ route('exercises.index') }}" title="Exercices" scrolling="no">
-            </iframe>
+            <iframe src="{{ route('exercises.index') }}" title="Exercices"></iframe>
         </div>
     </div>
-
-    <script>
-
-        window.addEventListener("message", function(event) {
-            if (event.data.type === "resize" && event.data.height) {
-                const iframe = document.getElementById("exerciseFrame");
-                const panel = iframe.parentElement;
-                const maxHeight = panel.clientHeight - 40;
-
-                iframe.classList.add("fading");
-
-                setTimeout(() => {
-                    const ratio = Math.min(1, maxHeight / event.data.height);
-                    iframe.style.transform = `scale(${ratio})`;
-                    iframe.style.height = event.data.height + "px";
-                    iframe.classList.remove("fading");
-                }, 150);
-            }
-        });
-    </script>
 
 </body>
 
