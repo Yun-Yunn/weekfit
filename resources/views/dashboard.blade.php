@@ -47,7 +47,6 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            /* ✅ ancrage haut */
             position: relative;
             overflow: hidden;
         }
@@ -112,7 +111,7 @@ iframe {
     </div>
 
     <script>
-        // ⚙️ Ajustement dynamique, sans scroll ni vide, toujours collé en haut
+
         window.addEventListener("message", function(event) {
             if (event.data.type === "resize" && event.data.height) {
                 const iframe = document.getElementById("exerciseFrame");
@@ -123,7 +122,7 @@ iframe {
 
                 setTimeout(() => {
                     const ratio = Math.min(1, maxHeight / event.data.height);
-                    iframe.style.transform = `scale(${ratio})`; // ✅ pas de translate, juste scale
+                    iframe.style.transform = `scale(${ratio})`;
                     iframe.style.height = event.data.height + "px";
                     iframe.classList.remove("fading");
                 }, 150);

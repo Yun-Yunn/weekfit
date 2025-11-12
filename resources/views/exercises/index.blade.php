@@ -2,7 +2,6 @@
 
 @section('content')
 <div class="flex flex-col justify-center items-center h-screen w-full text-white bg-gray-900 overflow-hidden relative">
-    {{-- 🕹️ Écran d’attente avec bouton "Lancer la séance" --}}
     <div id="start-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-50">
         <h1 class="text-4xl font-bold mb-6 text-amber-400">Prêt à commencer ton entraînement ?</h1>
         <button id="start-btn" class="bg-green-600 hover:bg-green-700 text-white text-xl font-semibold px-6 py-3 rounded-lg shadow-lg transition transform hover:scale-105">
@@ -10,12 +9,11 @@
         </button>
     </div>
 
-    {{-- ⏱️ Écran du compte à rebours --}}
+
     <div id="countdown" class="absolute inset-0 hidden flex items-center justify-center bg-gray-900 z-40">
         <h1 id="countdown-number" class="text-8xl font-extrabold text-amber-400 animate-pulse">5</h1>
     </div>
 
-    {{-- 💪 Contenu principal des exercices --}}
     <div id="exercise-content" class="opacity-0 transition-opacity duration-700">
         <div class="bg-gray-800 rounded-2xl shadow-2xl p-6 w-[90%] max-w-3xl text-center overflow-hidden">
             <h1 class="text-3xl font-bold mb-6">Entraînement du jour</h1>
@@ -88,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     });
 
-    // Gestion des boutons suivant/précédent
+
     const cards = document.querySelectorAll('.exercise-card');
     const nextButtons = document.querySelectorAll('.next-btn');
     const endMessage = document.getElementById('end-message');
